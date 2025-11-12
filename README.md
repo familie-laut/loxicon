@@ -30,6 +30,10 @@ The index is used to generate the UUID for each icon, which the Miniserver uses 
 
 To ensure that each custom icon has a static UUID, the index should be prefixed to each filename. An example is shown below, with the resulting `IconLibrary.zip` that is generated when Loxicon is run:
 
+Besides the icon file, you can add an [filename.svg]__.tags__ file. This file contains search tags for the icon, with each tag on a separate line. It is combined with the tags provided via the CLI parameter `--tags`.
+
+* `1.bunny-rabbit.svg.tags`
+
 <p align="center">
 <img src="https://github.com/strobejb/loxicon/blob/assets/icons.png" />
 </p>

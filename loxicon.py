@@ -87,7 +87,13 @@ def add_icons_to_library(zf, iconList, tags=[], line=True, filled=True, force=Fa
             xmlroot = ET.parse(ilf)       
 
             for icon in iconList:     
-                if add_icon_xml(xmlroot, icon['name'], icon['index'], tags, line, filled, force):
+                # combine CLI tags with any per-file tags read from .svg.tags
+                combined_tags = list(tags) if tags else []
+                if 'tags' in icon and icon['tags']:
+                    # append per-file tags, avoiding modifying the original 'tags' arg
+                    combined_tags.extend(icon['tags'])
+
+                if add_icon_xml(xmlroot, icon['name'], icon['index'], combined_tags, line, filled, force):
                     modified = True
 
         # write the new version of the XML file
@@ -134,10 +140,29 @@ def compile_svgs(iconspec):
         i = m.group(1) if m.group(1) else len(files)+1
 
         if m.group(1):
-            files.append(dict(index=int(i), 
-                          name=prefix + m.group(2),
-                          path=file
-                    ))
+            # prepare base entry
+            entry = dict(index=int(i), 
+                         name=prefix + m.group(2),
+                         path=file)
+
+            # look for a corresponding .tags file next to the svg
+            tags_path = file + '.tags'
+            tags_list = []
+            if os.path.exists(tags_path):
+                try:
+                    with open(tags_path, 'r', encoding='utf-8') as tf:
+                        for line in tf:
+                            t = line.strip()
+                            if t:
+                                tags_list.append(t)
+                except OSError:
+                    # if reading fails, ignore tags for this file
+                    tags_list = []
+
+            if tags_list:
+                entry['tags'] = tags_list
+
+            files.append(entry)
     return files    
 
 def upload_to_miniserver(miniserver, source, dest):
