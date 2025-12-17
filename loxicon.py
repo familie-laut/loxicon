@@ -44,23 +44,35 @@ def add_icon_svg(zf, iconPath, iconName, force=False):
 #
 def add_icon_xml(ixml, iconName, index, tags, line, filled, force=False):
     iconRoot = ixml.getroot()
-    
-    existing = iconRoot.find(f'Icon[@Id="{iconName}"]')
 
-    if existing is not None and force is False:
-        print(f'Skipping: {existing.attrib["Id"]}')
+    # find an existing element
+    elem = iconRoot.find(f'Icon[@Id="{iconName}"]')
+
+    if elem is None:
+        # not found -> create a new element
+        elem = ET.Element('Icon')
+        elem.set('Id', iconName)
+        is_new = True
+    else:
+        is_new = False
+
+    if not is_new and force is False:
+        print(f'Skipping: {elem.attrib.get("Id")}')
         return None
 
-    newIcon = ET.Element('Icon', 
-                            uuid   = str(loxUUID(index)),
-                            Id     = iconName,
-                            Tags   = ','.join(tags),
-                            line   = str(line).lower(),
-                            filled = str(filled).lower())
-    
-    print('Adding xml:', ET.tostring(newIcon, encoding='unicode'))
-    iconRoot.append(newIcon)
-    return True          
+    # set/update attributes in one place
+    elem.set('uuid', str(loxUUID(index)))
+    elem.set('Tags', ','.join(tags) if tags else '')
+    elem.set('line', str(line).lower())
+    elem.set('filled', str(filled).lower())
+
+    if is_new:
+        print('Adding xml:', ET.tostring(elem, encoding='unicode'))
+        iconRoot.append(elem)
+    else:
+        print('Updated xml:', ET.tostring(elem, encoding='unicode'))
+
+    return True
 
 
 
