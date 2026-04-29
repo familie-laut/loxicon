@@ -99,6 +99,7 @@ Further commands are listed in the program help:
 * `--icons <spec>` - path spec to the collection of SVG icons. i.e. `--icons *.svg`
 * `--library <path>` - path to the IconLibrary.zip file to update. By default Loxicon will search for the latest version of the library in the Loxone Config directory, and will save a _new_ copy in the current directory so that the original is not overwritten.
 * `--tags <tag tag..>` - additional tag(s) to serve as search terms for each icon. By default a single tag `custom` will be applied. i.e.. `--tags custom one two`. These tags are how you will locate your custom icons in the UI.
+* `--idx-offset <number>` - offset added to the `Idx` attribute for custom icon XML entries. Default is `10000`.
 * `--languages <lang lang..>` - specify which languages to target. By default English and German are used. i.e. `--languages ENG DEU`
 * `--force` - force updating the icon library even if the custom icons are already present.
 * `--overwrite` - overwrite the library specified by the `--library` option. This prevents the new copy from being created.

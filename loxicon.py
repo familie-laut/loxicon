@@ -50,7 +50,7 @@ def add_icon_svg(zf, iconPath, iconName, force=False):
 #
 #   Add an XML entry to describe the icon
 #
-def add_icon_xml(ixml, iconName, index, tags, line, filled, force=False):
+def add_icon_xml(ixml, iconName, index, tags, line, filled, idx_offset=10000, force=False):
     iconRoot = ixml.getroot()
 
     # find an existing element
@@ -70,6 +70,7 @@ def add_icon_xml(ixml, iconName, index, tags, line, filled, force=False):
     # set/update attributes in a stable order to match original XML style
     ordered_attrib = {
         'uuid': str(loxUUID(index)),
+        'Idx': str(int(index) + int(idx_offset)),
         'Id': iconName,
         'Tags': ','.join(tags) if tags else '',
         'line': str(line).lower(),
@@ -93,7 +94,7 @@ def add_icon_xml(ixml, iconName, index, tags, line, filled, force=False):
 
 
 
-def add_icons_to_library(zf, iconList, tags=[], line=True, filled=True, force=False, languages=['']):
+def add_icons_to_library(zf, iconList, tags=[], line=True, filled=True, idx_offset=10000, force=False, languages=['']):
 
     libraryXMLNames = [f'IconLibrary{"_" if lang else ""}{lang}.xml' for lang in languages]
 
@@ -126,7 +127,7 @@ def add_icons_to_library(zf, iconList, tags=[], line=True, filled=True, force=Fa
                     # append per-file tags, avoiding modifying the original 'tags' arg
                     combined_tags.extend(icon['tags'])
 
-                if add_icon_xml(xmlroot, icon['name'], icon['index'], combined_tags, line, filled, force):
+                if add_icon_xml(xmlroot, icon['name'], icon['index'], combined_tags, line, filled, idx_offset, force):
                     modified = True
                     library_modified = True
 
@@ -237,6 +238,7 @@ if __name__ == '__main__':
     parser.add_argument('--library',   type=str, default = find_icon_library(), help='Path to IconLibrary.zip' )
     parser.add_argument('--languages', type=str, default=['ENG', 'DEU'], nargs='+', help='Languages to target')    
     parser.add_argument('--tags',      type=str, default=['custom'], nargs='+', help="Optional tags to apply to each icon")    
+    parser.add_argument('--idx-offset', type=int, default=10000, help='Offset for Idx attribute on custom icons (default: 10000)')
     parser.add_argument('--force',      default=False, action='store_true')
     parser.add_argument('--overwrite',  default=False, action="store_true")
     parser.add_argument('--miniserver', type=str, help='IP address of miniserver to upload IconLibrary.zip')
@@ -260,6 +262,7 @@ if __name__ == '__main__':
                              force=args.force, 
                              languages=args.languages,
                              tags=args.tags, 
+                             idx_offset=args.idx_offset,
                              line=True,
                              filled=True,
                              )
