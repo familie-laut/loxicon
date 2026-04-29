@@ -70,8 +70,8 @@ def add_icon_xml(ixml, iconName, index, tags, line, filled, idx_offset=10000, fo
     # set/update attributes in a stable order to match original XML style
     ordered_attrib = {
         'uuid': str(loxUUID(index)),
-        'Id': iconName,
         'Idx': str(int(index) + int(idx_offset)),
+        'Id': iconName,
         'Tags': ','.join(tags) if tags else '',
         'line': str(line).lower(),
         'filled': str(filled).lower(),
