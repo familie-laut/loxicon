@@ -59,7 +59,6 @@ def add_icon_xml(ixml, iconName, index, tags, line, filled, force=False):
     if elem is None:
         # not found -> create a new element
         elem = ET.Element('Icon')
-        elem.set('Id', iconName)
         is_new = True
     else:
         is_new = False
@@ -68,11 +67,19 @@ def add_icon_xml(ixml, iconName, index, tags, line, filled, force=False):
         print(f'Skipping: {elem.attrib.get("Id")}')
         return None
 
-    # set/update attributes in one place
-    elem.set('uuid', str(loxUUID(index)))
-    elem.set('Tags', ','.join(tags) if tags else '')
-    elem.set('line', str(line).lower())
-    elem.set('filled', str(filled).lower())
+    # set/update attributes in a stable order to match original XML style
+    ordered_attrib = {
+        'uuid': str(loxUUID(index)),
+        'Id': iconName,
+        'Tags': ','.join(tags) if tags else '',
+        'line': str(line).lower(),
+        'filled': str(filled).lower(),
+    }
+    for key, value in elem.attrib.items():
+        if key not in ordered_attrib:
+            ordered_attrib[key] = value
+    elem.attrib.clear()
+    elem.attrib.update(ordered_attrib)
 
     if is_new:
         print('Adding xml:', ET.tostring(elem, encoding='unicode'))
