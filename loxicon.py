@@ -25,6 +25,14 @@ def loxUUID(idx):
     uuid = f'{int(idx)|BASE :08X}-00FF-0000-0000000000000000'
     return uuid
 
+
+def detect_icon_indent(data):
+    text = data.decode('utf-8', errors='ignore')
+    match = re.search(r'(?:\r\n|\r|\n)([ \t]+)<Icon\b', text)
+    if match:
+        return match.group(1)
+    return '  '
+
 #
 #   Add an SVG icon to the zipfile. zf should be opened in append mode
 #
@@ -91,12 +99,18 @@ def add_icons_to_library(zf, iconList, tags=[], line=True, filled=True, force=Fa
     #
     # parse each IconLibrary.XML / add icon entries
     #
+    library_modified = False
+
     for ilxname in libraryXMLNames:
         print(f'Updating: {ilxname}')
         modified = False        
 
         with zf.open(ilxname, 'r') as ilf:
-            xmlroot = ET.parse(ilf)       
+            xmlraw = ilf.read()
+
+            indent = detect_icon_indent(xmlraw)
+
+            xmlroot = ET.ElementTree(ET.fromstring(xmlraw))
 
             for icon in iconList:     
                 # combine CLI tags with any per-file tags read from .svg.tags
@@ -107,15 +121,19 @@ def add_icons_to_library(zf, iconList, tags=[], line=True, filled=True, force=Fa
 
                 if add_icon_xml(xmlroot, icon['name'], icon['index'], combined_tags, line, filled, force):
                     modified = True
+                    library_modified = True
 
         # write the new version of the XML file
         if modified:
-            
-            xmldata = ET.tostring(xmlroot.getroot(), encoding='utf-8', method='xml')            
+            ET.indent(xmlroot, space=indent)
+            root = xmlroot.getroot()
+            if root is None:
+                continue
+            xmldata = ET.tostring(root, encoding='utf-8', method='xml')
             zf.writestr(ilxname, xmldata)
 
     # update the library version
-    if modified:
+    if library_modified:
         print('Updating: version')
         today_date = datetime.datetime.now().strftime('%Y%m%d')
         zf.writestr('version', today_date)
